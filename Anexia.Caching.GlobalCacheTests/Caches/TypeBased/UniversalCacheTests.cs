@@ -15,6 +15,7 @@ using ACIM.Sales.PriceListTest.TestData.Sales.Core;
 using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 using Xunit;
 using Xunit.Abstractions;
+using Assert = Xunit.Assert;
 using ThreadState = System.Threading.ThreadState;
 
 namespace ACIM.Sales.Core.Helper.Cache.Tests
@@ -23,6 +24,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
     /// Universal test cache
     /// </summary>
     [Collection("UniCache")]
+    [Trait("Category", "GitHub")]
     public class UniversalCacheTests
     {
         private readonly ITestOutputHelper output;
