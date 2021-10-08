@@ -24,6 +24,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
     /// Universal test cache
     /// </summary>
     [Collection("UniCache")]
+    [Trait("Category", "GitHub")]
     public class UniversalCacheTests
     {
         private readonly ITestOutputHelper output;
@@ -178,7 +179,6 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
         /// <returns>Execution task</returns>
         [Theory]
         [ClassData(typeof(TestDataIterator<List<Block>>))]
-        [Trait("Category", "GitHub")]
         public async Task GetAll(GenericContainer<List<Block>> toSearch, GenericContainer<List<Block>> expected)
         {
             if (!(toSearch?.BShouldFail ?? true))
