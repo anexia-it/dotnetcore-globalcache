@@ -23,6 +23,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Base.Tests
     /// <summary>
     /// Base caching test
     /// </summary>
+    [Trait("Category", "GitHub")]
     public class BaseCacheTests
     {
         private readonly ITestOutputHelper output;

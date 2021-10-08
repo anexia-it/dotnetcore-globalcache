@@ -1,4 +1,4 @@
-name: ClobalCacheTests
+name: GlobalCacheTests
 
 on:
   pull_request:
