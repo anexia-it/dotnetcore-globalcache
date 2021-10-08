@@ -13,6 +13,7 @@ using ACIM.Sales.PriceListTest.MoqSetup.CacheMoq;
 using ACIM.Sales.PriceListTest.TestData.Generic;
 using ACIM.Sales.PriceListTest.TestData.Sales.Core;
 using Anexia.Caching.GlobalCacheTests.TestData.Generic;
+using System.ComponentModel;
 using Xunit;
 using Xunit.Abstractions;
 using ThreadState = System.Threading.ThreadState;
@@ -49,6 +50,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
         /// <returns>Task of execution</returns>
         [Theory]
         [ClassData(typeof(TestDataIterator<List<Block>>))]
+        [Category("GitHub")]
         public async Task InsertAsyncStressTest(
             GenericContainer<List<Block>> toSearch,
             GenericContainer<List<Block>> expected)
@@ -119,6 +121,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
         /// <returns>Execution task</returns>
         [Theory]
         [ClassData(typeof(TestDataIterator<List<Block>>))]
+        [Category("GitHub")]
         public async Task InsertAsyncTest(
             GenericContainer<List<Block>> toSearch,
             GenericContainer<List<Block>> expected)
@@ -145,6 +148,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
         /// <returns>Execution task</returns>
         [Theory]
         [ClassData(typeof(TestDataIterator<List<Block>>))]
+        [Category("GitHub")]
         public async Task InsertAsyncTestDuration(
             GenericContainer<List<Block>> toSearch,
             GenericContainer<List<Block>> expected)
@@ -177,6 +181,7 @@ namespace ACIM.Sales.Core.Helper.Cache.Tests
         /// <returns>Execution task</returns>
         [Theory]
         [ClassData(typeof(TestDataIterator<List<Block>>))]
+        [Category("GitHub")]
         public async Task GetAll(GenericContainer<List<Block>> toSearch, GenericContainer<List<Block>> expected)
         {
             if (!(toSearch?.BShouldFail ?? true))
