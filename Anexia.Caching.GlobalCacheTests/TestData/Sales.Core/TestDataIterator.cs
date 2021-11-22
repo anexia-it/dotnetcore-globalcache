@@ -4,12 +4,11 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
+using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 using System.Collections;
 using System.Collections.Generic;
-using ACIM.Sales.PriceListTest.TestData.Generic;
-using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 
-namespace ACIM.Sales.PriceListTest.TestData.Sales.Core
+namespace Anexia.Caching.GlobalCacheTests.TestData.Sales.Core
 {
     /// <summary>
     /// Test data iterator which creates faulty objects and healthy objects

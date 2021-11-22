@@ -9,7 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ACIM.Sales.Core.Helper.Cache.BaseInterface
+namespace Anexia.Caching.GlobalCache.Interface.BaseInterface
 {
     /// <summary>
     /// Base cache interface for standardizing calls

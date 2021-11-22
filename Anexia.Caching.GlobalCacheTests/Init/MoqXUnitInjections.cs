@@ -4,11 +4,11 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
-using ACIM.Sales.Core.Helper.Cache;
-using ACIM.Sales.PriceListTest.MoqSetup.CacheMoq;
+using Anexia.Caching.GlobalCache.Caches.TypeBased;
+using Anexia.Caching.GlobalCacheTests.CacheMoq;
 using Xunit;
 
-namespace ACIM.Sales.PriceListTest.MoqSetup.Init
+namespace Anexia.Caching.GlobalCacheTests.Init
 {
     [CollectionDefinition("UniCache")]
     public class MoqXUnitInjectionsCache

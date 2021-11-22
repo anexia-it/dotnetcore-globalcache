@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using ACIM.Sales.Core.Helper.Cache.BaseInterface;
 using Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction;
 using Anexia.Caching.GlobalCache.Constants;
 using Anexia.Caching.GlobalCache.Interface.BaseInterface;

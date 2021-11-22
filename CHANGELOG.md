@@ -50,3 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Asynchronous expiration update after getting an item from redis cache
+
+## [0.2.7] - 2021-11-22
+
+### Breaking Changed
+- ACIM.Sales-Namespaces renamed to Anexia.Caching-Namespaces
+ 
