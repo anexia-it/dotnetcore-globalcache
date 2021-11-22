@@ -4,7 +4,7 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
-namespace ACIM.Sales.PriceListTest.TestData.Generic
+namespace Anexia.Caching.GlobalCacheTests.TestData.Generic
 {
     /// <summary>
     /// Test data container which contains result changes

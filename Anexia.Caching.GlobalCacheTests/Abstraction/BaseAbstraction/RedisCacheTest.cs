@@ -4,13 +4,13 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
-using System;
-using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Abstraction.BaseCache;
 using Anexia.Caching.GlobalCache.Config.Model;
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
-namespace ACIM.Sales.Core.Helper.Cache.Base.Tests
+namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
 {
     /// <summary>
     /// Test class for Redis caches

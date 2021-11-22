@@ -4,10 +4,10 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
+using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using System;
-using ACIM.Sales.Core.Helper.Cache.BaseInterface;
 
-namespace ACIM.Sales.PriceListTest.MoqSetup.CacheMoq
+namespace Anexia.Caching.GlobalCacheTests.CacheMoq
 {
     /// <summary>
     /// Moq object for Cache

@@ -4,21 +4,21 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
+using Anexia.Caching.GlobalCache.Caches.TypeBased;
+using Anexia.Caching.GlobalCacheTests.CacheMoq;
+using Anexia.Caching.GlobalCacheTests.TestData.Generic;
+using Anexia.Caching.GlobalCacheTests.TestData.Sales.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using ACIM.Sales.PriceListTest.MoqSetup.CacheMoq;
-using ACIM.Sales.PriceListTest.TestData.Generic;
-using ACIM.Sales.PriceListTest.TestData.Sales.Core;
-using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 using ThreadState = System.Threading.ThreadState;
 
-namespace ACIM.Sales.Core.Helper.Cache.Tests
+namespace Anexia.Caching.GlobalCacheTests.Caches.TypeBased
 {
     /// <summary>
     /// Universal test cache

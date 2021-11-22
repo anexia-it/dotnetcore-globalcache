@@ -10,7 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8A95E99D-01E1-4ED4-AEC3-B44440C665D8}"
 ProjectSection(SolutionItems) = preProject
 	.editorconfig = .editorconfig
-	ACIMRules.ruleset = ACIMRules.ruleset
+	AnexiaRules.ruleset = AnexiaRules.ruleset
 	CHANGELOG.md = CHANGELOG.md
 	README.md = README.md
 	stylecop.json = stylecop.json

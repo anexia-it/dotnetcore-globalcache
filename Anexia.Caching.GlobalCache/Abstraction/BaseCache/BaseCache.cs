@@ -8,7 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ACIM.Sales.Core.Helper.Cache.BaseInterface;
 using Anexia.Caching.GlobalCache.Caches.CacheTypes;
 using Anexia.Caching.GlobalCache.Config;
 using Anexia.Caching.GlobalCache.Config.Model;

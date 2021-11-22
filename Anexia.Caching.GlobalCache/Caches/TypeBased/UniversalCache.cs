@@ -4,11 +4,11 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
+using Anexia.Caching.GlobalCache.Caches.CacheTypes;
 using System;
 using System.Threading.Tasks;
-using Anexia.Caching.GlobalCache.Caches.CacheTypes;
 
-namespace ACIM.Sales.Core.Helper.Cache
+namespace Anexia.Caching.GlobalCache.Caches.TypeBased
 {
     /// <summary>
     /// Universal cache with Memory Cache
