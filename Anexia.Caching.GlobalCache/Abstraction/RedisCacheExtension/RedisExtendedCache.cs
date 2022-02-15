@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
         private const string SLIDING_EXPIRATION_KEY = "sldexp";
         private const string DATA_KEY = "data";
         private const long NOT_PRESENT = -1;
-        private const string DEFAULT_PORT = "6379";
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
         private readonly string _instance;
@@ -217,14 +217,13 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
         public async Task<string[]> GetAllKeysAsync(string keyPrefix = default, CancellationToken token = default)
         {
-            Task[] tasks = default;
             var result = new ConcurrentBag<string>();
             token.ThrowIfCancellationRequested();
             var i = 0;
 
             var lengthToCut = _instance.Length;
             var keyPrefixLengthToCut = keyPrefix == default ? 1 : keyPrefix.Length + 1;
-            tasks = _options.ConfigurationOptions?.EndPoints != null
+            var tasks = _options.ConfigurationOptions?.EndPoints != null
                 ? new Task[_options.ConfigurationOptions.EndPoints.Count]
                 : new Task[1];
             if (_options.ConfigurationOptions?.EndPoints != null)
@@ -255,9 +254,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             }
             else
             {
-                var connection = _options.Configuration.Contains(":")
-                    ? _options.Configuration
-                    : $"{_options.Configuration}:{DEFAULT_PORT}";
+                var connection = _connection.Configuration.Split(",").First();
                 tasks[0] = ConnectGetKeysAsync(connection, token: token).ContinueWith(
                     async task =>
                     {

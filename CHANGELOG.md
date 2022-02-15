@@ -55,4 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changed
 - ACIM.Sales-Namespaces renamed to Anexia.Caching-Namespaces
+
+## [0.2.8] - 2022-02-14
+
+### Fix
+- Fixed issue, where getting all keys from a redis cache database doesn't work when having connection options defined in the redis' connection string
  
