@@ -7,6 +7,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -116,9 +117,9 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             tasks[0] = _serializer.SerializeToStringAsync(key).ContinueWith(task => CreateKey(task.Result));
             tasks[1] = _serializer.SerializeToByteAsync(element);
             return Task.WhenAll(tasks).ContinueWith(
-                task =>
+                async task =>
                 {
-                    _cache.SetAsync(
+                    await _cache.SetAsync(
                         ((Task<string>)tasks[0]).Result,
                         ((Task<byte[]>)tasks[1]).Result,
                         new DistributedCacheEntryOptions
@@ -127,7 +128,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
                             SlidingExpiration = CalculateSlidingExpirationTime(absoluteExpirationDate, slidingExpiration),
                         });
                 },
-                TaskScheduler.Current);
+                TaskScheduler.Current).Unwrap();
         }
 
         /// <inheritdoc/>
@@ -192,7 +193,22 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         public ICollection GetAllKeys() => ((RedisExtendedCache)_cache).GetAllKeysAsync(_typeKey).Result;
 
         /// <inheritdoc/>
-        public List<T> GetAllValues() => throw new NotImplementedException();
+        public List<T> GetAllValues()
+        {
+            return ((RedisExtendedCache)_cache).GetAllValuesAsync(
+                    _serializer.DeserializeObjectAsync<T>,
+                    _typeKey)
+                .ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted && task.Exception != null)
+                        {
+                            throw task.Exception;
+                        }
+
+                        return task.Result.ToList();
+                    }).Result;
+        }
 
         /// <inheritdoc/>
         public bool Remove(object key)

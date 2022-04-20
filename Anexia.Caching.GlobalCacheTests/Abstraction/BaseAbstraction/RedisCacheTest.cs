@@ -4,10 +4,11 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Abstraction.BaseCache;
 using Anexia.Caching.GlobalCache.Config.Model;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
@@ -292,12 +293,42 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
         /// <summary>
         ///     Item's key should not be found because not existent
         /// </summary>
+        /// <returns>Task to work on</returns>
         [Fact]
-        public void CheckIfHasKeyAsyncShouldReturnFalse()
+        public async Task CheckIfHasKeyAsyncShouldReturnFalse()
         {
-            var hasKey = _baseCacheWithoutTypeKey.HasKeyAsync("Key999");
+            var hasKey = await _baseCacheWithoutTypeKey.HasKeyAsync("Key999");
 
-            Assert.True(!hasKey.Result);
+            Assert.True(!hasKey);
+        }
+
+        /// <summary>
+        ///     Item's key should not be found because not existent
+        /// </summary>
+        [Fact]
+        public void GetLargeChunkOfValues()
+        {
+            var counter = 10000;
+            var allObjectsSaved = new Dictionary<int, TestClass>();
+            while (counter >= 0)
+            {
+                var differentTestClass = new TestClass()
+                {
+                    TestPropertyName = "Different",
+                    TestPropertyNumber = counter,
+                };
+                _baseCacheWithoutTypeKey.Insert($"KeyBase{counter}", differentTestClass);
+                allObjectsSaved.Add(counter, differentTestClass);
+                counter--;
+            }
+            var listOfData = _baseCacheWithoutTypeKey.GetAllValues();
+            foreach (var dataRetrieved in listOfData)
+            {
+                allObjectsSaved.Remove(dataRetrieved.TestPropertyNumber);
+            }
+
+            Assert.NotNull(listOfData);
+            Assert.Empty(allObjectsSaved);
         }
     }
 }
