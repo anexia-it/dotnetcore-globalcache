@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Anexia.Caching.GlobalCache.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Options;
@@ -164,7 +165,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                 new RedisValue[]
                 {
                     absoluteExpiration?.Ticks ?? NOT_PRESENT, options.SlidingExpiration?.Ticks ?? NOT_PRESENT,
-                    GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NOT_PRESENT, value
+                    GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NOT_PRESENT, value,
                 }).ConfigureAwait(false);
         }
 
@@ -215,7 +216,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             // TODO: Error handling
         }
 
-        public async Task<string[]> GetAllKeysAsync(string keyPrefix = default, CancellationToken token = default)
+        public Task<string[]> GetAllKeysAsync(string keyPrefix = default, CancellationToken token = default)
         {
             var result = new ConcurrentBag<string>();
             token.ThrowIfCancellationRequested();
@@ -274,8 +275,131 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                     TaskScheduler.Current).Unwrap();
             }
 
+            return Task.WhenAll(tasks)
+                .ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted && task.Exception != null)
+                        {
+                            throw task.Exception;
+                        }
+
+                        return result.ToArray();
+                    },
+                    token,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Current);
+        }
+
+        public async Task<T[]> GetAllValuesAsync<T>(
+            Func<byte[], Task<T>> bodyToConvert,
+            string keyPrefix = default,
+            CancellationToken token = default)
+        {
+            var result = new ConcurrentBag<T>();
+            token.ThrowIfCancellationRequested();
+            var i = 0;
+            var _instanceStringLength = _instance.Length;
+            var processorToUse = Environment.ProcessorCount > 2 ? Environment.ProcessorCount - 1 : 1;
+            var matchString = _instance + keyPrefix;
+            var tasks = _options.ConfigurationOptions?.EndPoints != null
+                ? new Task[_options.ConfigurationOptions.EndPoints.Count]
+                : new Task[1];
+            var getAllValueTasks = new Task[processorToUse];
+            var counter = 0;
+
+            async Task AsyncWorker(object key)
+            {
+                result.Add(await bodyToConvert(await GetAsync((string)key, token)));
+            }
+
+            Task ContinueWorker(Task task, object key)
+            {
+                return AsyncWorker(key);
+            }
+
+            async Task GetValuesOutOfKey(RedisKey redisKey)
+            {
+                if (processorToUse == counter)
+                {
+                    counter = 0;
+                }
+
+                var key = redisKey.ToString();
+                if (keyPrefix != default && !key.StartsWith(matchString))
+                {
+                    return;
+                }
+
+                getAllValueTasks[counter] = getAllValueTasks[counter] != null ?
+                    getAllValueTasks[counter]
+                        .ContinueWith(
+                            ContinueWorker,
+                            key[_instanceStringLength..],
+                            cancellationToken: token,
+                            continuationOptions: TaskContinuationOptions.None,
+                            scheduler: TaskScheduler.Current).Unwrap() :
+                    Task.Factory.StartNew(
+                        AsyncWorker,
+                        key[_instanceStringLength..],
+                        cancellationToken: token,
+                        creationOptions: TaskCreationOptions.None,
+                        scheduler: TaskScheduler.Current).Unwrap();
+                counter++;
+            }
+
+            if (_options.ConfigurationOptions?.EndPoints != null)
+            {
+                foreach (var configurationOptionsEndPoint in _options.ConfigurationOptions?.EndPoints)
+                {
+                    tasks[i] = ConnectGetKeysAsync(configurationOptionsEndPoint, token: token)
+                        .ContinueWith(
+                        async task =>
+                        {
+                            if (task.IsCompletedSuccessfully)
+                            {
+                                await foreach (var redisKey in task.Result.WithCancellation(token))
+                                {
+                                    await GetValuesOutOfKey(redisKey);
+                                }
+                            }
+                        },
+                        TaskScheduler.Current).Unwrap();
+                    i++;
+                }
+            }
+            else
+            {
+                var connection = _connection.Configuration.Split(",").First();
+                tasks[0] = ConnectGetKeysAsync(connection, token: token).ContinueWith(
+                    async task =>
+                    {
+                        if (task.IsCompletedSuccessfully)
+                        {
+                            await foreach (var redisKey in task.Result.WithCancellation(token))
+                            {
+                                await GetValuesOutOfKey(redisKey);
+                            }
+                        }
+                    },
+                    TaskScheduler.Current).Unwrap();
+            }
+
             await Task.WhenAll(tasks);
-            return result.ToArray();
+            return await Task.WhenAll(getAllValueTasks)
+                .ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted && task.Exception != null)
+                        {
+                            throw task.Exception;
+                        }
+
+                        return result.ToArray();
+                    },
+                    token,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Current);
         }
 
         private void Connect()
@@ -300,7 +424,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
         }
 
         /// <summary>
-        ///     Creates a connection to RedisCache and gets the keys
+        ///     Creates a connection to RedisCache and get the keys
         /// </summary>
         /// <param name="endPoint">Connection endpoint</param>
         /// <param name="pageOffset">Optional page offset to start from</param>
@@ -659,29 +783,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             }
 
             return expr;
-        }
-    }
-
-    internal static class RedisExtensionsLocal
-    {
-        internal static RedisValue[] HashMemberGet(this IDatabase cache, string key, params string[] members) =>
-            cache.HashGet(key, GetRedisMembers(members)); // TODO: Error checking?
-
-        internal static async Task<RedisValue[]> HashMemberGetAsync(
-            this IDatabase cache,
-            string key,
-            params string[] members) =>
-            await cache.HashGetAsync(key, GetRedisMembers(members)).ConfigureAwait(false); // TODO: Error checking?
-
-        private static RedisValue[] GetRedisMembers(params string[] members)
-        {
-            var redisMembers = new RedisValue[members.Length];
-            for (var i = 0; i < members.Length; i++)
-            {
-                redisMembers[i] = (RedisValue)members[i];
-            }
-
-            return redisMembers;
         }
     }
 }
