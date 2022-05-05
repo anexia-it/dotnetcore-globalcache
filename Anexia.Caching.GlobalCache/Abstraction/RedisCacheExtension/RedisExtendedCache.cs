@@ -216,17 +216,20 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             // TODO: Error handling
         }
 
-        public Task<string[]> GetAllKeysAsync(string keyPrefix = default, CancellationToken token = default)
+        public async Task<string[]> GetAllKeysAsync(string keyPrefix = default, CancellationToken token = default)
         {
             var result = new ConcurrentBag<string>();
             token.ThrowIfCancellationRequested();
             var i = 0;
+
+            await ConnectAsync(token);
 
             var lengthToCut = _instance.Length;
             var keyPrefixLengthToCut = keyPrefix == default ? 1 : keyPrefix.Length + 1;
             var tasks = _options.ConfigurationOptions?.EndPoints != null
                 ? new Task[_options.ConfigurationOptions.EndPoints.Count]
                 : new Task[1];
+
             if (_options.ConfigurationOptions?.EndPoints != null)
             {
                 foreach (var configurationOptionsEndPoint in _options.ConfigurationOptions?.EndPoints)
@@ -275,20 +278,8 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                     TaskScheduler.Current).Unwrap();
             }
 
-            return Task.WhenAll(tasks)
-                .ContinueWith(
-                    task =>
-                    {
-                        if (task.IsFaulted && task.Exception != null)
-                        {
-                            throw task.Exception;
-                        }
-
-                        return result.ToArray();
-                    },
-                    token,
-                    TaskContinuationOptions.None,
-                    TaskScheduler.Current);
+            await Task.WhenAll(tasks);
+            return result.ToArray();
         }
 
         public async Task<T[]> GetAllValuesAsync<T>(
@@ -298,6 +289,9 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
         {
             var result = new ConcurrentBag<T>();
             token.ThrowIfCancellationRequested();
+
+            await ConnectAsync(token);
+
             var i = 0;
             var _instanceStringLength = _instance.Length;
             var processorToUse = Environment.ProcessorCount > 2 ? Environment.ProcessorCount - 1 : 1;
