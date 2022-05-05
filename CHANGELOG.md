@@ -68,3 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Asynchronous call in InsertAsync was not awaited
+
+## [0.2.10] - 2022-04-22
+
+### Fixed
+- Connection error for GetAllKeys and GetAllValues
