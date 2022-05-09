@@ -380,7 +380,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             }
 
             await Task.WhenAll(tasks);
-            return await Task.WhenAll(getAllValueTasks)
+            return await Task.WhenAll(getAllValueTasks.Where(task => task != null))
                 .ContinueWith(
                     task =>
                     {
