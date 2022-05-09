@@ -73,3 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Connection error for GetAllKeys and GetAllValues
+
+## [0.2.11] - 2022-04-22
+
+### Fixed
+- Task null exception when cache is empty - GetAllValues
