@@ -61,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fix
 - Fixed issue, where getting all keys from a redis cache database doesn't work when having connection options defined in the redis' connection string
 
-## [0.2.9] - 2022-04-22
+## [0.2.9] - 2022-05-04
 
 ### Added
 - GetAllValues for Redis Cache implemented, use with caution
@@ -69,12 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Asynchronous call in InsertAsync was not awaited
 
-## [0.2.10] - 2022-04-22
+## [0.2.10] - 2022-05-05
 
 ### Fixed
 - Connection error for GetAllKeys and GetAllValues
 
-## [0.2.11] - 2022-04-22
+## [0.2.11] - 2022-05-09
 
 ### Fixed
 - Task null exception when cache is empty - GetAllValues
