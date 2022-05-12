@@ -78,3 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Task null exception when cache is empty - GetAllValues
+
+## [0.2.12] - 2022-05-12
+
+### Added
+- AcquireLock and ReleaseLock for redis cache; Not implemented for in memory cache, since it is not a distributed cache and already thread safe

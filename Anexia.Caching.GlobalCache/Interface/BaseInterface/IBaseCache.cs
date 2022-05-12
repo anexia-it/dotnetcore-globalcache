@@ -48,7 +48,7 @@ namespace Anexia.Caching.GlobalCache.Interface.BaseInterface
         /// </summary>
         /// <param name="key">Key of cache</param>
         /// <param name="element">Object of cache</param>
-        /// <param name="duration">Absolute expiration date</param
+        /// <param name="duration">Absolute expiration date</param>
         /// <param name="slidingExpiration">Sliding expiration time span</param>
         /// <returns>Task on which the function operates</returns>
         public Task InsertAsync(
@@ -132,5 +132,20 @@ namespace Anexia.Caching.GlobalCache.Interface.BaseInterface
         /// <param name="key">Object key for Cache</param>
         /// <returns>Task of True if key existed and got deleted false if either of them is false</returns>
         public Task<bool> RemoveAsync(object key);
+
+        /// <summary>
+        ///     Acquires the lock
+        /// </summary>
+        /// <returns><c>true</c>, if lock was acquired, <c>false</c> otherwise.</returns>
+        /// <param name="key">Lock key</param>
+        /// <param name="expiration">Absolute expiration</param>
+        public bool AcquireLock(object key, TimeSpan expiration = default);
+
+        /// <summary>
+        ///     Releases the lock
+        /// </summary>
+        /// <returns><c>true</c>, if lock was released, <c>false</c> otherwise.</returns>
+        /// <param name="key">Lock key</param>
+        public bool ReleaseLock(object key);
     }
 }
