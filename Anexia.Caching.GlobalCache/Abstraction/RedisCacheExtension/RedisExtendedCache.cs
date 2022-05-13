@@ -37,15 +37,31 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                 end
                 return 1";
 
+        // KEYS[1] = key
+        // ARGV[1] = value
+        // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
+        // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
+        // ARGV[4] = data - byte[]
+        // this order should not change LUA script depends on it
+        const string RELEASE_LOCK_SCRIPT = @"
+                if (redis.call('GET', KEYS[1]) == ARGV[1]) then 
+                    redis.call('DEL', KEYS[1])
+                    return true  
+                else  
+                    return false  
+                end";
+
         private const string ABSOLUTE_EXPIRATION_KEY = "absexp";
         private const string SLIDING_EXPIRATION_KEY = "sldexp";
         private const string DATA_KEY = "data";
+        private const string LOCK = "lock";
         private const long NOT_PRESENT = -1;
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
         private readonly string _instance;
-
         private readonly RedisCacheOptions _options;
+
+        private bool _isDisposed;
         private IDatabase _cache;
         private volatile ConnectionMultiplexer _connection;
 
@@ -71,7 +87,8 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
         /// </summary>
         public void Dispose()
         {
-            _connection?.Close();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -102,20 +119,9 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            _ = key ?? throw new ArgumentNullException(nameof(key));
+            _ = value ?? throw new ArgumentNullException(nameof(value));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
 
             Connect();
 
@@ -396,6 +402,52 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                     TaskScheduler.Current);
         }
 
+        /// <summary>
+        ///     Acquires the lock.
+        /// </summary>
+        /// <returns><c>true</c>, if lock was acquired, <c>false</c> otherwise.</returns>
+        /// <param name="key">Key.</param>
+        /// <param name="expiration">Expiration.</param>
+        public bool AcquireLock(string key, TimeSpan expiration)
+        {
+            bool flag;
+            Connect();
+
+            try
+            {
+                flag = _cache.StringSet(key, LOCK, expiration, when: When.NotExists);
+            }
+            catch
+            {
+                flag = true;
+            }
+
+            return flag;
+        }
+
+        /// <summary>
+        ///     Releases the lock
+        /// </summary>
+        /// <returns><c>true</c>, if lock was released, <c>false</c> otherwise.</returns>
+        /// <param name="key">Key.</param>
+        public bool ReleaseLock(string key)
+        {
+            Connect();
+
+            try
+            {
+                var res = _cache.ScriptEvaluate(
+                    RELEASE_LOCK_SCRIPT,
+                    new RedisKey[] { key },
+                    new RedisValue[] { LOCK });
+                return (bool)res;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void Connect()
         {
             if (_cache != null)
@@ -507,6 +559,25 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             {
                 _connectionLock.Release();
             }
+        }
+
+        /// <summary>
+        ///     Disposes of native resources
+        /// </summary>
+        /// <param name="disposing">Indicator whether to dispose or not</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _connection?.Dispose();
+            }
+
+            _isDisposed = true;
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
     /// <typeparam name="T">Type of return values</typeparam>
     internal class RedisCacheLayer<T> : IBaseCache<T>
     {
-        private readonly IDistributedCache _cache;
+        private readonly RedisExtendedCache _cache;
         private readonly string _typeKey;
 
         private RedisCacheLayer(
@@ -92,8 +92,8 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             : this(serializer, keyType)
         {
             _cache = config != null
-                ? new RedisCache(RedisConfig.ReadRedisFromConfig(config?.Value))
-                : new RedisCache(RedisConfig.ReadRedisFromConfig());
+                ? new RedisExtendedCache(config.Value)
+                : new RedisExtendedCache(RedisConfig.ReadRedisFromConfig());
             _typeKey = keyType ?? typeof(T).Name;
         }
 
@@ -232,6 +232,23 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
 
             _ = _cache.RemoveAsync(CreateKey(_serializer.SerializeToString(key)));
             return true;
+        }
+
+        /// <inheritdoc/>
+        public bool AcquireLock(object key, TimeSpan expiration = default)
+        {
+            if (expiration == default)
+            {
+                expiration = BaseConstants.DEFAULT_LOCK_TIME;
+            }
+
+            return _cache.AcquireLock(CreateKey(_serializer.SerializeToString(key)), expiration);
+        }
+
+        /// <inheritdoc/>
+        public bool ReleaseLock(object key)
+        {
+            return _cache.ReleaseLock(CreateKey(_serializer.SerializeToString(key)));
         }
 
         /// <inheritdoc/>

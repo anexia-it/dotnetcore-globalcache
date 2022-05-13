@@ -278,6 +278,16 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             return Task.Run(() => Remove(key));
         }
 
+        /// <inheritdoc/>
+        [Obsolete("Memory cache is already undistributed and thread safe")]
+        public bool AcquireLock(object key, TimeSpan expiration = default) =>
+            throw new NotImplementedException("Memory cache is already undistributed and thread safe");
+
+        /// <inheritdoc/>
+        [Obsolete("Memory cache is already undistributed and thread safe")]
+        public bool ReleaseLock(object key) =>
+            throw new NotImplementedException("Memory cache is already undistributed and thread safe");
+
         /// <summary>
         ///     Cost intensive operation uses reflection please use it with performance in mind
         /// </summary>

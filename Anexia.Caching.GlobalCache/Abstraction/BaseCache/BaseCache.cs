@@ -162,5 +162,11 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseCache
 
         /// <inheritdoc/>
         public Task<bool> RemoveAsync(object key) => _cache.RemoveAsync(key);
+
+        /// <inheritdoc/>
+        public bool AcquireLock(object key, TimeSpan expiration = default) => _cache.AcquireLock(key, expiration);
+
+        /// <inheritdoc/>
+        public bool ReleaseLock(object key) => _cache.ReleaseLock(key);
     }
 }
