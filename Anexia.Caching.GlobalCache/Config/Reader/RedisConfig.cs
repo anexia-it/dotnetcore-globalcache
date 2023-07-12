@@ -10,7 +10,7 @@ using Anexia.Caching.GlobalCache.Config.Model;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 
-namespace Anexia.Caching.GlobalCache.Config.Reader
+namespace Anexia.Caching.GlobalCache.Config
 {
     // dotcover disable
 
