@@ -83,3 +83,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - AcquireLock and ReleaseLock for redis cache; Not implemented for in memory cache, since it is not a distributed cache and already thread safe
+
+## [0.3.0] - 2023-07-12
+
+### Added
+- CI-NuGet-Deployment
+- Extended Unit-Tests
