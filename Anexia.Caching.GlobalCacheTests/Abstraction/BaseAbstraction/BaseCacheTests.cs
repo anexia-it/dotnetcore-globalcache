@@ -263,6 +263,86 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
 
             Assert.True(!hasKey.Result);
         }
+
+        /// <summary>
+        ///     Values should be loaded
+        /// </summary>
+        [Fact]
+        public void TestGetAllValuesShouldReturnAllCachedValues()
+        {
+            var testclass01 = new TestClass(true);
+            var testclass02 = new TestClass(true);
+            _baseCache.Insert(testclass01, testclass01);
+            _baseCache.Insert(testclass02, testclass02);
+            var values = _baseCache.GetAllValues();
+
+            Assert.True(values.Count == 2);
+        }
+
+        /// <summary>
+        ///     Keys should be loaded
+        /// </summary>
+        [Fact]
+        public void TestGetAllKeysShouldReturnAllCachedKeys()
+        {
+            var testclass01 = new TestClass(true);
+            var testclass02 = new TestClass(true);
+            _baseCache.Insert(testclass01, testclass01);
+            _baseCache.Insert(testclass02, testclass02);
+            var values = _baseCache.GetAllKeys();
+
+            Assert.True(values.Count == 2);
+        }
+
+        /// <summary>
+        ///     Inserted Elements should expire after 1 Minute
+        /// </summary>
+        [Fact]
+        public void TestInsertWithDurationInMinutesShouldExpire()
+        {
+            var testclass01 = new TestClass(true);
+            _baseCache.Insert(testclass01, testclass01, 1);
+            Thread.Sleep(70000);
+            var values = _baseCache.GetAllValues();
+            var value = _baseCache.Get(testclass01);
+
+            Assert.True(values.Count == 0);
+            Assert.Null(value);
+        }
+
+        /// <summary>
+        ///     Inserted Elements should expire after 1 Minute
+        /// </summary>
+        [Fact]
+        public void TestInsertAsyncWithDurationInMinutesShouldExpire()
+        {
+            var testclass01 = new TestClass(true);
+            var thread = _baseCache.InsertAsync(testclass01, testclass01, 1);
+            thread.Wait();
+            Thread.Sleep(70000);
+            var values = _baseCache.GetAllValues();
+            var value = _baseCache.GetAsync(testclass01);
+            value.Wait();
+
+            Assert.True(values.Count == 0);
+            Assert.Null(value.Result);
+        }
+
+        /// <summary>
+        ///     Inserted Element should be Removed Async
+        /// </summary>
+        [Fact]
+        public void TestRemoveAsync()
+        {
+            var testclass01 = new TestClass(true);
+            _baseCache.Insert(testclass01, testclass01);
+            var value = _baseCache.Get(testclass01);
+            Assert.NotNull(value);
+            var task = _baseCache.RemoveAsync(testclass01);
+            task.Wait();
+            value = _baseCache.Get(testclass01);
+            Assert.Null(value);
+        }
     }
 
     /// <summary>
@@ -294,6 +374,19 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
         /// Test
         /// </summary>
         public decimal TestPropertyDecimal { get; set; } = 2.0m;
+
+        public TestClass(bool randomizeValues = false)
+        {
+            if (randomizeValues)
+            {
+                Random rnd = new Random();
+                TestPropertyNumber = rnd.Next();
+                TestPropertyName = $"will be string {rnd.Next().ToString()}";
+                TestPropertyDate = DateTime.Today.AddDays(rnd.Next(1, 365));
+                TestPropertyGuid = Guid.NewGuid();
+                TestPropertyDecimal = rnd.Next() / 100;
+            }
+        }
     }
 
     /// <summary>
