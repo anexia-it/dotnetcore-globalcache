@@ -34,7 +34,7 @@ jobs:
         run: dotnet build --configuration Release /p:Version=${VERSION}
 
       - name: Test
-        run: dotnet test --filter Category="GitHub" --no-restore --verbosity normal --no-build
+        run: dotnet test --filter Category="GitHub" --no-restore --verbosity normal
       
       - name: Pack
         run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
