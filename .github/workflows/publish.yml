@@ -6,7 +6,7 @@ on:
       - completed
 
 jobs:
-  deploy:
+  on-success:
     strategy:
       fail-fast: false
       matrix:
