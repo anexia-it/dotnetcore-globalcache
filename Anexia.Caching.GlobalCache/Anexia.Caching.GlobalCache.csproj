@@ -52,14 +52,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\icon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
+    <None Include="..\icon.png" Pack="true" PackagePath="\"/>
+    <None Include="..\LICENSE" Pack="true" PackagePath="\"/>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\CHANGELOG.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>
