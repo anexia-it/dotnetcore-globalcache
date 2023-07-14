@@ -34,7 +34,12 @@ jobs:
         run: dotnet build --configuration Release /p:Version=${VERSION}
 
       - name: Test
-        run: dotnet test --filter Category="GitHub" --no-restore --verbosity normal
+        run:  |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          dotnet test --filter Category="GitHub" --no-restore --verbosity normal
       
       - name: Pack
         run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
