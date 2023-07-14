@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - master
-      - AddCiDeployment
       - releases/*
     paths-ignore:
       - '**.md'
@@ -28,5 +27,5 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
-#      - name: Test
-#        run: dotnet test --filter Category="GitHub" --no-restore --verbosity normal
+      - name: Test
+        run: dotnet test --filter Category="GitHub" --no-restore --verbosity normal
