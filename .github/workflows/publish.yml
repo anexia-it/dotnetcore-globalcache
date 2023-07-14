@@ -8,6 +8,8 @@ on:
 
 jobs:
   deploy:
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -35,10 +37,6 @@ jobs:
 
       - name: Test
         run:  |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           dotnet test --filter Category="GitHub" --no-restore --verbosity normal
       
       - name: Pack
