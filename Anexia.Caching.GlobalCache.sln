@@ -17,6 +17,7 @@ ProjectSection(SolutionItems) = preProject
 	settings.stylecop = settings.stylecop
     .github\workflows\test.yml = .github\workflows\test-dotnet.yml
     .github\workflows\publish.yml = .github\workflows\publish.yml
+    .github\workflows\codecoverage.yml = .github\workflows\code-coverage.yml
 EndProjectSection
 EndProject
 Global
