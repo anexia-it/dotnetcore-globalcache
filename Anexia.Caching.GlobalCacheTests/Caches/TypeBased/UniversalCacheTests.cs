@@ -4,15 +4,16 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Caches.TypeBased;
 using Anexia.Caching.GlobalCacheTests.CacheMoq;
 using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 using Anexia.Caching.GlobalCacheTests.TestData.Sales.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
@@ -23,6 +24,7 @@ namespace Anexia.Caching.GlobalCacheTests.Caches.TypeBased
     /// <summary>
     /// Universal test cache
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [Collection("UniCache")]
     [Trait("Category", "GitHub")]
     public class UniversalCacheTests
