@@ -10,7 +10,8 @@
             <!-- (Use "\." to delimit namespaces in C# or Visual Basic, "::" in C++.)  -->
             <Functions>
               <Exclude>
-                <Function>^Anexia\.Caching\.GlobalCache\.Caches\.CacheTypes\.RedisCacheLayer*</Function>
+                <Function>^Anexia\.Caching\.GlobalCache\.Caches\.CacheTypes\..*</Function>
+                <Function>^Anexia\.Caching\.GlobalCacheTests\.Abstraction\.BaseAbstraction\..*</Function>
               </Exclude>
             </Functions>
             <!-- We recommend you do not change the following values: -->
