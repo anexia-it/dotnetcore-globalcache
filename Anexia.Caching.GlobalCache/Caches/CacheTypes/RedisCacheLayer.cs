@@ -21,6 +21,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
 {
@@ -28,6 +29,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
     /// Redis Cache layer
     /// </summary>
     /// <typeparam name="T">Type of return values</typeparam>
+    [ExcludeFromCodeCoverage]
     internal class RedisCacheLayer<T> : IBaseCache<T>
     {
         private readonly RedisExtendedCache _cache;
