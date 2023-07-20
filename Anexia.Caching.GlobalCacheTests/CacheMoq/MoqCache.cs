@@ -4,8 +4,9 @@
 // </copyright>
 // ------------------------------------------------------------------------------------------
 
-using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 
 namespace Anexia.Caching.GlobalCacheTests.CacheMoq
 {
@@ -13,6 +14,7 @@ namespace Anexia.Caching.GlobalCacheTests.CacheMoq
     /// Moq object for Cache
     /// </summary>
     /// <typeparam name="T">Type to mock with</typeparam>
+    [ExcludeFromCodeCoverage]
     public class MoqCache<T>
         : IDisposable 
         where T : IBaseCache<object>

@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Abstraction.BaseCache;
 using Anexia.Caching.GlobalCache.Config.Model;
@@ -16,6 +17,7 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
     /// <summary>
     /// Test class for Redis caches
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class RedisCacheTest
     {
         private readonly BaseCache<TestClass> _baseCacheWithTypeKey;

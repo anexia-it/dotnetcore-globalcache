@@ -9,6 +9,7 @@ using System.IO;
 using Anexia.Caching.GlobalCache.Config.Model;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Anexia.Caching.GlobalCache.Config
 {
@@ -17,6 +18,7 @@ namespace Anexia.Caching.GlobalCache.Config
     /// <summary>
     /// Redis configuration reader
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class RedisConfig
     {
         /// <summary>
