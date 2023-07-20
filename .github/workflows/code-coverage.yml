@@ -28,9 +28,14 @@ jobs:
       - name: Write Readme File
         run: cat CHANGELOG.md >> README.md
 
+      - name: Commit & Push changes
+        uses: actions-js/push@AddCodeCoverageAction
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Write to Job Summary
         run: cat README.md >> $GITHUB_STEP_SUMMARY
-
+#
 #      - name: Test
 #        run: dotnet test --filter Category="GitHub" --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings:"runsettings.runsettings"
 #
@@ -54,5 +59,16 @@ jobs:
 #          recreate: true
 #          path: code-coverage-results.md
 #
+##      - name: Write to Job Summary
+##        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+#
+#      - name: Write Readme File
+#        run: cat code-coverage-results.md >> README.md
+#
+#      - name: Commit & Push changes
+#        uses: actions-js/push@AddCodeCoverageAction
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#
 #      - name: Write to Job Summary
-#        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+#        run: cat README.md >> $GITHUB_STEP_SUMMARY

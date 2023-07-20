@@ -13,7 +13,6 @@ ProjectSection(SolutionItems) = preProject
 	AnexiaRules.ruleset = AnexiaRules.ruleset
 	CHANGELOG.md = CHANGELOG.md
 	README.md = README.md
-	CODE_METRICS.md = CODE_METRICS.md
 	stylecop.json = stylecop.json
 	settings.stylecop = settings.stylecop
     .github\workflows\test.yml = .github\workflows\test-dotnet.yml

@@ -43,3 +43,5 @@ If you want to run the Redis cache tests, you have to have a Redis cache running
 * Alex Peruzzi <APeruzzi@anexia-it>
 * Joachim Eckerl <JEckerl@anexia-it.com>
 * Andreas Aigner <AAigner@anexia-it.com>
+
+## Code Coverage
