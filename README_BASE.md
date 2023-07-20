@@ -35,6 +35,10 @@ Used in every possible application needed.
 If you want to use RedisCache, test the Text.Json serializer with your model that you want to cache.  
 If Text.Json delivers error messages you have to create your own serilizer with the IBaseSerializer.
 
+## Code Coverage and Readme Process
+If you want to modify Readme-File, always mod README_BASE.md.
+README.md will be overwritten after pull request to master-branch. 
+
 ## Testing
 If you want to run the Redis cache tests, you have to have a Redis cache running on localhost
 
