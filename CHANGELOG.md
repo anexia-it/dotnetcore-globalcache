@@ -89,3 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CI-NuGet-Deployment
 - Extended Unit-Tests
+
+## [0.3.3] - 2023-07-20
+
+### Added
+- Adding CI-Code-Coverage
+- Publish Code-Coverage to Readme and NuGet
