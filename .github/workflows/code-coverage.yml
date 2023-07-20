@@ -27,11 +27,52 @@ jobs:
 
       - name: Write Readme File
         run: cat CHANGELOG.md >> README.md
+      
+      # Set environment variables based on the last commit
+      - name: Set environment variable "commit-message"
+        run: echo "commit-message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_ENV
+      - name: Display environment variable "commit-message"
+        run: echo "commit-message=${{ env.commit-message }}"
 
-      - name: Commit & Push changes
-        uses: actions-js/push
+      - name: Set environment variable "commit-author"
+        run: echo "commit-author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_ENV
+      - name: Display environment variable "commit-author"
+        run: echo "commit-author=${{ env.commit-author }}"
+
+      - name: Set environment variable "is-auto-commit"
+        if: env.commit-message == env.CI_COMMIT_MESSAGE && env.commit-author == env.CI_COMMIT_AUTHOR
+        run: echo "is-auto-commit=true" >> $GITHUB_ENV
+      - name: Display environment variable "is-auto-commit"
+        run: echo "is-auto-commit=${{ env.is-auto-commit }}"
+      
+      # Build
+      - uses: actions/setup-node@v3
+        if: env.is-auto-commit == false
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '12'
+      - name: (Main) Install nodes packages
+        if: env.is-auto-commit == false
+        run: npm ci
+      - name: (Main) Build package (lint, test, doc, build, package)
+        if: env.is-auto-commit == false
+        run: npm run package
+      
+      # Commit generated and commit files
+      - name: Display event name
+        run: echo "github.event_name=${{ github.event_name }}"
+      - name: Commit build artifacts (dist, devdist, docs, coverage)
+        # Don't run again on already pushed auto commit. Don't run on pull request events.
+        if: env.is-auto-commit == false && github.event_name != 'pull_request'
+        run: |
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "username@users.noreply.github.com"
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
+
+#      - name: Commit & Push changes
+#        uses: actions-js/push@AddCodeCoverageAction
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Write to Job Summary
         run: cat README.md >> $GITHUB_STEP_SUMMARY
