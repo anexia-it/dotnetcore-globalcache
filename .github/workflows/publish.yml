@@ -30,20 +30,16 @@ jobs:
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
       - name: Restore Dependencies
-        if: github.event_name == 'pull_request'
         run: dotnet restore
 
       - name: Build
-        if: github.event_name == 'pull_request'
         run: dotnet build --configuration Release --no-restore
 
       - name: Test
-        if: github.event_name == 'pull_request'
         run: dotnet test --filter Category="GitHub" --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings:"runsettings.runsettings"
 
       - name: Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
-        if: github.event_name == 'pull_request'
         with:
           filename: coverage/**/coverage.cobertura.xml
           badge: true
@@ -57,21 +53,17 @@ jobs:
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
         with:
           recreate: true
           path: code-coverage-results.md
 
       - name: Write Base Readme File
-        if: github.event_name == 'pull_request'
         run: cat README_BASE.md > README.md
 
       - name: Write Readme File
-        if: github.event_name == 'pull_request'
         run: cat code-coverage-results.md >> README.md
 
       - uses: stefanzweifel/git-auto-commit-action@v4
-        if: github.event_name == 'pull_request'
         with:
           commit_message: "[Bot] Update all the things!"
           commit_user_name: CI System
@@ -79,7 +71,6 @@ jobs:
           commit_author: CI System <ci@anexia-it.com>
 
       - name: Write to Job Summary
-        if: github.event_name == 'pull_request'
         run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
       - name: Build
