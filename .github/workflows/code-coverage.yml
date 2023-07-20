@@ -25,25 +25,11 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      - name: Write Base Readme File
+        run: cat README_BASE.md > README.md
+
       - name: Write Readme File
         run: cat CHANGELOG.md >> README.md
-      
-      # Set environment variables based on the last commit
-      - name: Set environment variable "commit-message"
-        run: echo "commit-message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_ENV
-      - name: Display environment variable "commit-message"
-        run: echo "commit-message=${{ env.commit-message }}"
-
-      - name: Set environment variable "commit-author"
-        run: echo "commit-author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_ENV
-      - name: Display environment variable "commit-author"
-        run: echo "commit-author=${{ env.commit-author }}"
-
-      - name: Set environment variable "is-auto-commit"
-        if: env.commit-message == env.CI_COMMIT_MESSAGE && env.commit-author == env.CI_COMMIT_AUTHOR
-        run: echo "is-auto-commit=true" >> $GITHUB_ENV
-      - name: Display environment variable "is-auto-commit"
-        run: echo "is-auto-commit=${{ env.is-auto-commit }}"
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -51,11 +37,6 @@ jobs:
           commit_user_name: CI System
           commit_user_email: ci@anexia-it.com
           commit_author: CI System <ci@anexia-it.com>
-
-#      - name: Commit & Push changes
-#        uses: actions-js/push@AddCodeCoverageAction
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Write to Job Summary
         run: cat README.md >> $GITHUB_STEP_SUMMARY
