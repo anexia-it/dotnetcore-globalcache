@@ -1,19 +1,13 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="BaseCache.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Anexia.Caching.GlobalCache.Caches.CacheTypes;
+﻿using Anexia.Caching.GlobalCache.Caches.CacheTypes;
 using Anexia.Caching.GlobalCache.Config;
 using Anexia.Caching.GlobalCache.Config.Model;
 using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Anexia.Caching.GlobalCache.Abstraction.BaseCache
 {

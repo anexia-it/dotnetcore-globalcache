@@ -1,18 +1,12 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="UniversalCacheTests.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using Anexia.Caching.GlobalCache.Caches.TypeBased;
-using Anexia.Caching.GlobalCacheTests.CacheMoq;
-using Anexia.Caching.GlobalCacheTests.TestData.Generic;
-using Anexia.Caching.GlobalCacheTests.TestData.Sales.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Anexia.Caching.GlobalCache.Caches.TypeBased;
+using Anexia.Caching.GlobalCacheTests.CacheMoq;
+using Anexia.Caching.GlobalCacheTests.TestData.Generic;
+using Anexia.Caching.GlobalCacheTests.TestData.Sales.Core;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;

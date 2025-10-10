@@ -1,14 +1,8 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="RedisConfig.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using System;
-using System.IO;
-using Anexia.Caching.GlobalCache.Config.Model;
+﻿using Anexia.Caching.GlobalCache.Config.Model;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 
 namespace Anexia.Caching.GlobalCache.Config
 {

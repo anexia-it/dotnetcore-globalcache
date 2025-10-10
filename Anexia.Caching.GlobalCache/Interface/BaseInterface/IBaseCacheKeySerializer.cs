@@ -1,10 +1,4 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="IBaseCacheKeySerializer.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Anexia.Caching.GlobalCache.Interface.BaseInterface

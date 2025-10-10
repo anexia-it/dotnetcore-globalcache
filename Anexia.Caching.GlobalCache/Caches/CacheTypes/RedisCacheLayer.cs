@@ -1,16 +1,4 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="RedisCacheLayer.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction;
+﻿using Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction;
 using Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension;
 using Anexia.Caching.GlobalCache.Config;
 using Anexia.Caching.GlobalCache.Config.Model;
@@ -20,6 +8,12 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
 {

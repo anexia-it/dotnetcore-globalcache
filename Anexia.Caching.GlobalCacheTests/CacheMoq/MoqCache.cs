@@ -1,11 +1,5 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="MoqCache.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
+﻿using System;
 using Anexia.Caching.GlobalCache.Interface.BaseInterface;
-using System;
 
 namespace Anexia.Caching.GlobalCacheTests.CacheMoq
 {

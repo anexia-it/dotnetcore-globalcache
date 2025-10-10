@@ -1,10 +1,4 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="UniversalCache.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using Anexia.Caching.GlobalCache.Caches.CacheTypes;
+﻿using Anexia.Caching.GlobalCache.Caches.CacheTypes;
 using System;
 using System.Threading.Tasks;
 

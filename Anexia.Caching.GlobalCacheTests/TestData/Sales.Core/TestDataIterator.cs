@@ -1,12 +1,6 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="TestDataIterator.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using Anexia.Caching.GlobalCacheTests.TestData.Generic;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 
 namespace Anexia.Caching.GlobalCacheTests.TestData.Sales.Core
 {
@@ -31,12 +25,8 @@ namespace Anexia.Caching.GlobalCacheTests.TestData.Sales.Core
             var obj = CreateGenericObject<T>(false);
             var objFail = CreateGenericObject<T>(true);
 
-            // Success test
-            // First object will be saved
             yield return new[] { obj, obj };
 
-            // fail test
-            // wont be saved
             yield return new[] { objFail, null };
         }
 

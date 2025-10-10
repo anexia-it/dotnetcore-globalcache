@@ -1,13 +1,7 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="RedisCacheTest.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
+﻿using System;
+using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Abstraction.BaseCache;
 using Anexia.Caching.GlobalCache.Config.Model;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
@@ -30,6 +24,10 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
             {
                 Configuration = "localhost",
                 InstanceName = "RedisCacheTest",
+                ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions()
+                {
+                    EndPoints = { { "localhost", 7000 } }
+                }
             };
 
             _baseCache = new BaseCache<TestClass>(config, typeKey: "baseCache");

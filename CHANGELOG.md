@@ -60,4 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fix
 - Fixed issue, where getting all keys from a redis cache database doesn't work when having connection options defined in the redis' connection string
- 
+
+## [0.4.0] - 2022-02-14
+
+### Fix
+- Update to the newest MemoryCache and update to nugets with security concerns
