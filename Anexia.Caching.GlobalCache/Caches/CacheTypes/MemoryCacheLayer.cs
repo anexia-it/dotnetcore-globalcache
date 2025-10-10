@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -296,8 +297,59 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         public ICollection GetAllKeys()
         {
             GetEntryInfo();
-            var entries = EntriesInfo.GetValue(Cache) as IDictionary;
-            return entries?.Keys;
+            
+            if (EntriesInfo == null)
+            {
+                return new List<object>();
+            }
+            
+            var fieldValue = EntriesInfo.GetValue(Cache);
+            
+            // Handle .NET 8.0+ CoherentState structure
+            if (fieldValue != null && fieldValue.GetType().Name == "CoherentState")
+            {
+                var allKeys = new List<object>();
+                
+                // Get _stringEntries
+                var stringEntriesField = fieldValue.GetType().GetField(
+                    "_stringEntries",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+                
+                if (stringEntriesField != null)
+                {
+                    var stringEntries = stringEntriesField.GetValue(fieldValue) as IDictionary;
+                    if (stringEntries != null)
+                    {
+                        foreach (var key in stringEntries.Keys)
+                        {
+                            allKeys.Add(key);
+                        }
+                    }
+                }
+                
+                // Get _nonStringEntries
+                var nonStringEntriesField = fieldValue.GetType().GetField(
+                    "_nonStringEntries",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+                
+                if (nonStringEntriesField != null)
+                {
+                    var nonStringEntries = nonStringEntriesField.GetValue(fieldValue) as IDictionary;
+                    if (nonStringEntries != null)
+                    {
+                        foreach (var key in nonStringEntries.Keys)
+                        {
+                            allKeys.Add(key);
+                        }
+                    }
+                }
+                
+                return allKeys;
+            }
+            
+            // Handle older .NET versions (direct IDictionary)
+            var entriesDirect = fieldValue as IDictionary;
+            return entriesDirect?.Keys.Cast<object>().ToList() ?? new List<object>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -305,9 +357,18 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         {
             if (EntriesInfo == null)
             {
+                // Try .NET 8.0+ field name first
                 EntriesInfo = typeof(MemoryCache).GetField(
-                    "_entries",
+                    "_coherentState",
                     BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Instance);
+                
+                // Fallback to older .NET versions if not found
+                if (EntriesInfo == null)
+                {
+                    EntriesInfo = typeof(MemoryCache).GetField(
+                        "_entries",
+                        BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Instance);
+                }
             }
         }
 
