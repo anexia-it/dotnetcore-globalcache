@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Anexia.Caching.GlobalCacheTests.Init
 {
+    [ExcludeFromCodeCoverage]
     [CollectionDefinition("UniCache")]
     public class MoqXUnitInjectionsCache
         : ICollectionFixture<MoqCache<UniversalCache>>

@@ -21,9 +21,10 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
     /// Redis Cache layer
     /// </summary>
     /// <typeparam name="T">Type of return values</typeparam>
+    [ExcludeFromCodeCoverage]
     internal class RedisCacheLayer<T> : IBaseCache<T>
     {
-        private readonly IDistributedCache _cache;
+        private readonly RedisExtendedCache _cache;
         private readonly string _typeKey;
 
         private RedisCacheLayer(
@@ -85,8 +86,8 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             : this(serializer, keyType)
         {
             _cache = config != null
-                ? new RedisCache(RedisConfig.ReadRedisFromConfig(config?.Value))
-                : new RedisCache(RedisConfig.ReadRedisFromConfig());
+                ? new RedisExtendedCache(config.Value)
+                : new RedisExtendedCache(RedisConfig.ReadRedisFromConfig());
             _typeKey = keyType ?? typeof(T).Name;
         }
 
@@ -110,9 +111,9 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             tasks[0] = _serializer.SerializeToStringAsync(key).ContinueWith(task => CreateKey(task.Result));
             tasks[1] = _serializer.SerializeToByteAsync(element);
             return Task.WhenAll(tasks).ContinueWith(
-                task =>
+                async task =>
                 {
-                    _cache.SetAsync(
+                    await _cache.SetAsync(
                         ((Task<string>)tasks[0]).Result,
                         ((Task<byte[]>)tasks[1]).Result,
                         new DistributedCacheEntryOptions
@@ -121,7 +122,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
                             SlidingExpiration = CalculateSlidingExpirationTime(absoluteExpirationDate, slidingExpiration),
                         });
                 },
-                TaskScheduler.Current);
+                TaskScheduler.Current).Unwrap();
         }
 
         /// <inheritdoc/>
@@ -186,7 +187,22 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         public ICollection GetAllKeys() => ((RedisExtendedCache)_cache).GetAllKeysAsync(_typeKey).Result;
 
         /// <inheritdoc/>
-        public List<T> GetAllValues() => throw new NotImplementedException();
+        public List<T> GetAllValues()
+        {
+            return ((RedisExtendedCache)_cache).GetAllValuesAsync(
+                    _serializer.DeserializeObjectAsync<T>,
+                    _typeKey)
+                .ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted && task.Exception != null)
+                        {
+                            throw task.Exception;
+                        }
+
+                        return task.Result.ToList();
+                    }).Result;
+        }
 
         /// <inheritdoc/>
         public bool Remove(object key)
@@ -210,6 +226,23 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
 
             _ = _cache.RemoveAsync(CreateKey(_serializer.SerializeToString(key)));
             return true;
+        }
+
+        /// <inheritdoc/>
+        public bool AcquireLock(object key, TimeSpan expiration = default)
+        {
+            if (expiration == default)
+            {
+                expiration = BaseConstants.DEFAULT_LOCK_TIME;
+            }
+
+            return _cache.AcquireLock(CreateKey(_serializer.SerializeToString(key)), expiration);
+        }
+
+        /// <inheritdoc/>
+        public bool ReleaseLock(object key)
+        {
+            return _cache.ReleaseLock(CreateKey(_serializer.SerializeToString(key)));
         }
 
         /// <inheritdoc/>

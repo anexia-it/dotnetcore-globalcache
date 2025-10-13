@@ -7,6 +7,7 @@ namespace Anexia.Caching.GlobalCacheTests.CacheMoq
     /// Moq object for Cache
     /// </summary>
     /// <typeparam name="T">Type to mock with</typeparam>
+    [ExcludeFromCodeCoverage]
     public class MoqCache<T>
         : IDisposable 
         where T : IBaseCache<object>

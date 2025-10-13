@@ -6,9 +6,12 @@ using System.IO;
 
 namespace Anexia.Caching.GlobalCache.Config
 {
+    // dotcover disable
+
     /// <summary>
     /// Redis configuration reader
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class RedisConfig
     {
         /// <summary>
@@ -70,4 +73,6 @@ namespace Anexia.Caching.GlobalCache.Config
             return ret;
         }
     }
+
+    // dotcover enable
 }

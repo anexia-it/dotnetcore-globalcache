@@ -8,6 +8,7 @@ namespace Anexia.Caching.GlobalCacheTests.TestData.Sales.Core
     /// Test data iterator which creates faulty objects and healthy objects
     /// </summary>
     /// <typeparam name="TItem">Type of item to create</typeparam>
+    [ExcludeFromCodeCoverage]
     public class TestDataIterator<TItem> : IEnumerable<object[]>
         where TItem : class, new()
     {
