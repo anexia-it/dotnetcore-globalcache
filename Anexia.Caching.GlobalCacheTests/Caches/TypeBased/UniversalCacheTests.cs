@@ -8,7 +8,6 @@ using Anexia.Caching.GlobalCacheTests.CacheMoq;
 using Anexia.Caching.GlobalCacheTests.TestData.Generic;
 using Anexia.Caching.GlobalCacheTests.TestData.Sales.Core;
 using Xunit;
-using Xunit.Abstractions;
 using Assert = Xunit.Assert;
 using ThreadState = System.Threading.ThreadState;
 

@@ -9,7 +9,6 @@ using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Xunit;
-using Xunit.Abstractions;
 using JsonSerializer = Utf8Json.JsonSerializer;
 
 namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
