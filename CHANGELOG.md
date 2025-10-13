@@ -61,42 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fix
 - Fixed issue, where getting all keys from a redis cache database doesn't work when having connection options defined in the redis' connection string
 
-## [0.2.9] - 2022-05-04
+## [0.4.0] - 2022-02-14
 
-### Added
-- GetAllValues for Redis Cache implemented, use with caution
-
-### Fixed
-- Asynchronous call in InsertAsync was not awaited
-
-## [0.2.10] - 2022-05-05
-
-### Fixed
-- Connection error for GetAllKeys and GetAllValues
-
-## [0.2.11] - 2022-05-09
-
-### Fixed
-- Task null exception when cache is empty - GetAllValues
-
-## [0.2.12] - 2022-05-12
-
-### Added
-- AcquireLock and ReleaseLock for redis cache; Not implemented for in memory cache, since it is not a distributed cache and already thread safe
-
-## [0.3.0] - 2023-07-12
-
-### Added
-- CI-NuGet-Deployment
-- Extended Unit-Tests
-
-## [0.3.3] - 2023-07-20
-
-### Added
-- Adding CI-Code-Coverage
-- Publish Code-Coverage to Readme and NuGet
-
-## [0.3.4] - 2023-07-20
-
-### Added
-- Update Readme
+### Fix
+- Update to the newest MemoryCache and update to nugets with security concerns

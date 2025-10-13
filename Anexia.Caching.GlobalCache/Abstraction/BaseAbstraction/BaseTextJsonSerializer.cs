@@ -1,13 +1,7 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="BaseTextJsonSerializer.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
+﻿using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using MSJson = System.Text.Json;
 
 namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
@@ -23,7 +17,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
         /// </summary>
         Func<object, object> IBaseSerializer.SerializeObject { get; } = obj =>
         {
-            if (obj is string objStr) // i assume keys are mostly strings so this should be faster
+            if (obj is string objStr)
             {
                 return objStr;
             }
@@ -36,7 +30,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
         /// </summary>
         Func<object, string> IBaseSerializer.SerializeToString { get; } = obj =>
         {
-            if (obj is string objStr) // i assume keys are mostly strings so this should be faster
+            if (obj is string objStr)
             {
                 return objStr;
             }
@@ -49,7 +43,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
         /// </summary>
         Func<object, byte[]> IBaseSerializer.SerializeToByte { get; } = obj =>
         {
-            if (obj.GetType() == typeof(byte[])) // i assume nobody sends a key as an array of bytes so i use this approach
+            if (obj.GetType() == typeof(byte[]))
             {
                 return obj as byte[];
             }
@@ -63,7 +57,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
         /// </summary>
         Func<object, Task<object>> IBaseSerializer.SerializeObjectAsync { get; } = async obj =>
         {
-            if (obj is string objStr) // i assume keys are mostly strings so this should be faster
+            if (obj is string objStr)
             {
                 return objStr;
             }
@@ -81,7 +75,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
         /// </summary>
         Func<object, Task<string>> IBaseSerializer.SerializeToStringAsync { get; } = async obj =>
         {
-            if (obj is string objStr) // i assume keys are mostly strings so this should be faster
+            if (obj is string objStr)
             {
                 return objStr;
             }
@@ -99,7 +93,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction
         /// </summary>
         Func<object, Task<byte[]>> IBaseSerializer.SerializeToByteAsync { get; } = async obj =>
         {
-            if (obj.GetType() == typeof(byte[])) // i assume nobody sends a key as an array of bytes so i use this approach
+            if (obj.GetType() == typeof(byte[]))
             {
                 return obj as byte[];
             }

@@ -1,20 +1,15 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="MemoryCacheLayer.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
+﻿using Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction;
+using Anexia.Caching.GlobalCache.Constants;
+using Anexia.Caching.GlobalCache.Interface.BaseInterface;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Anexia.Caching.GlobalCache.Abstraction.BaseAbstraction;
-using Anexia.Caching.GlobalCache.Constants;
-using Anexia.Caching.GlobalCache.Interface.BaseInterface;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
 {
@@ -64,9 +59,9 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             DateTime? duration = null,
             TimeSpan? slidingExpiration = null) =>
             Cache.Set(
-            _serializer.SerializeObject(key),
-            element,
-            GetMemoryCacheEntryOptions(duration, slidingExpiration));
+                _serializer.SerializeObject(key),
+                element,
+                GetMemoryCacheEntryOptions(duration, slidingExpiration));
 
         /// <summary>
         ///     Insert Cache with expiration minutes
@@ -99,12 +94,11 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             DateTime? duration = null,
             TimeSpan? slidingExpiration = null) =>
             _serializer.SerializeObjectAsync(key)
-                .ContinueWith(
-                    task => Insert(
-                        task.Result,
-                        element,
-                        duration,
-                        slidingExpiration));
+                .ContinueWith(task => Insert(
+                    task.Result,
+                    element,
+                    duration,
+                    slidingExpiration));
 
         /// <summary>
         ///     Insert Cache with expiration minutes
@@ -120,12 +114,11 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             int duration,
             TimeSpan? slidingExpiration = null) =>
             _serializer.SerializeObjectAsync(key)
-                .ContinueWith(
-                    task => Insert(
-                        task.Result,
-                        element,
-                        duration,
-                        slidingExpiration));
+                .ContinueWith(task => Insert(
+                    task.Result,
+                    element,
+                    duration,
+                    slidingExpiration));
 
         /// <summary>
         ///     Insert Cache with expiration date
@@ -158,22 +151,21 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         /// <returns>Task on which the function operates</returns>
         public Task InsertFuncAsync(object key, Func<Task<T>> valueGetter, DateTime? duration = null) =>
             _serializer.SerializeObjectAsync(key)
-                .ContinueWith(
-                    async task =>
-                    {
-                        await Cache.GetOrCreate(
-                            task.Result,
-                            async cacheEntry =>
+                .ContinueWith(async task =>
+                {
+                    await Cache.GetOrCreate(
+                        task.Result,
+                        async cacheEntry =>
+                        {
+                            if (cacheEntry != null)
                             {
-                                if (cacheEntry != null)
-                                {
-                                    cacheEntry.AbsoluteExpiration =
-                                        duration ?? DateTime.UtcNow.AddMinutes(BaseConstants.DEFAULT_CACHE_TIME);
-                                }
+                                cacheEntry.AbsoluteExpiration =
+                                    duration ?? DateTime.UtcNow.AddMinutes(BaseConstants.DEFAULT_CACHE_TIME);
+                            }
 
-                                return await valueGetter();
-                            });
-                    })
+                            return await valueGetter();
+                        });
+                })
                 .Unwrap();
 
         #endregion
@@ -194,8 +186,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         /// <returns><see cref="T"/> or default</returns>
         public Task<T> GetAsync(object key) =>
             _serializer.SerializeObjectAsync(key)
-                .ContinueWith(
-                    task => Cache.Get<T>(task.Result) ?? default(T));
+                .ContinueWith(task => Cache.Get<T>(task.Result) ?? default(T));
 
         #endregion
 
@@ -223,7 +214,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             {
                 ret = new ConcurrentDictionary<object, T>();
                 foreach (var key
-                    in entries)
+                         in entries)
                 {
                     if (HasKey(key, out var result))
                     {
@@ -248,7 +239,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             {
                 ret = new List<T>();
                 foreach (var key
-                    in entries)
+                         in entries)
                 {
                     if (HasKey(key, out var result))
                     {
@@ -296,8 +287,13 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         public ICollection GetAllKeys()
         {
             GetEntryInfo();
-            var entries = EntriesInfo.GetValue(Cache) as IDictionary;
-            return entries?.Keys;
+            var coherentState = EntriesInfo.GetValue(Cache);
+            var stringEntries = GetStringEntries(coherentState);
+            var objectEntries = GetObjectEntries(coherentState);
+            var result = new List<object>();
+            result.AddRange(stringEntries?.Keys as ICollection<string> ?? ArraySegment<string>.Empty);
+            result.AddRange(objectEntries?.Keys as ICollection<object> ?? ArraySegment<object>.Empty);
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -306,9 +302,21 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             if (EntriesInfo == null)
             {
                 EntriesInfo = typeof(MemoryCache).GetField(
-                    "_entries",
-                    BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Instance);
+                    "_coherentState",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
             }
+        }
+
+        private static IDictionary GetStringEntries(object coherentState)
+        {
+            var otherthing = coherentState.GetType().GetField("_stringEntries", BindingFlags.NonPublic | BindingFlags.Instance);
+            return otherthing?.GetValue(coherentState) as IDictionary;
+        }
+
+        private static IDictionary GetObjectEntries(object coherentState)
+        {
+            var otherthing = coherentState.GetType().GetField("_nonStringEntries", BindingFlags.NonPublic | BindingFlags.Instance);
+            return otherthing?.GetValue(coherentState) as IDictionary;
         }
 
         /// <summary>
@@ -343,15 +351,14 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
             else
             {
                 var timeUntilExpiration = absoluteExpiration.Value - DateTime.UtcNow;
-                slidingExpirationDate = timeUntilExpiration.Ticks <= 0 ?
-                    new TimeSpan(1) :
-                    new TimeSpan(timeUntilExpiration.Ticks / 2);
+                slidingExpirationDate = timeUntilExpiration.Ticks <= 0
+                    ? new TimeSpan(1)
+                    : new TimeSpan(timeUntilExpiration.Ticks / 2);
             }
 
             return new MemoryCacheEntryOptions()
             {
-                AbsoluteExpiration = absoluteExpiration,
-                SlidingExpiration = slidingExpirationDate,
+                AbsoluteExpiration = absoluteExpiration, SlidingExpiration = slidingExpirationDate,
             };
         }
 
@@ -364,9 +371,7 @@ namespace Anexia.Caching.GlobalCache.Caches.CacheTypes
         private static DateTime CalculateAbsoluteExpirationDate(int duration)
         {
             return DateTime.UtcNow.AddMinutes(
-                    duration > 0 ?
-                    duration :
-                    BaseConstants.DEFAULT_CACHE_TIME);
+                duration > 0 ? duration : BaseConstants.DEFAULT_CACHE_TIME);
         }
 
         #endregion

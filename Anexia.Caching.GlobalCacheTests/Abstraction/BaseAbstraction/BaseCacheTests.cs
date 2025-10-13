@@ -1,12 +1,5 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="BaseCacheTests.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;

@@ -1,9 +1,7 @@
-﻿// ------------------------------------------------------------------------------------------
-// <copyright file="RedisExtendedCache.cs" company="ANEXIA® Internetdienstleistungs GmbH">
-// Copyright (c) ANEXIA® Internetdienstleistungs GmbH. All rights reserved.
-// </copyright>
-// ------------------------------------------------------------------------------------------
-
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,11 +9,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Anexia.Caching.GlobalCache.Extensions;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 
 namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 {
@@ -24,12 +17,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
     /// </summary>
     public class RedisExtendedCache : IDistributedCache, IDisposable
     {
-        // KEYS[1] = = key
-        // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
-        // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
-        // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
-        // ARGV[4] = data - byte[]
-        // this order should not change LUA script depends on it
         private const string SET_SCRIPT = @"
                 redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
@@ -78,7 +65,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             _options = optionsAccessor.Value;
 
-            // This allows partitioning a single backend cache for use with multiple apps/services.
             _instance = _options.InstanceName ?? string.Empty;
         }
 
@@ -205,8 +191,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             Connect();
             _cache.KeyDelete(_instance + key);
-
-            // TODO: Error handling
         }
 
         public async Task RemoveAsync(string key, CancellationToken token = default)
@@ -218,8 +202,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             await ConnectAsync(token).ConfigureAwait(false);
             await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
-
-            // TODO: Error handling
         }
 
         public async Task<string[]> GetAllKeysAsync(string keyPrefix = default, CancellationToken token = default)
@@ -632,13 +614,10 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             Connect();
 
-            // This also resets the LRU status as desired.
-            // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             var results = getData
                 ? _cache.HashMemberGet(_instance + key, ABSOLUTE_EXPIRATION_KEY, SLIDING_EXPIRATION_KEY, DATA_KEY)
                 : _cache.HashMemberGet(_instance + key, ABSOLUTE_EXPIRATION_KEY, SLIDING_EXPIRATION_KEY);
 
-            // TODO: Error handling
             if (results.Length >= 2)
             {
                 _ = Task.Run(
@@ -668,8 +647,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             await ConnectAsync(token).ConfigureAwait(false);
 
-            // This also resets the LRU status as desired.
-            // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             var results = getData
                 ? await _cache.HashMemberGetAsync(
                     _instance + key,
@@ -681,7 +658,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             if (results.Length >= 2)
             {
-                // TODO: Error handling
                 _ = Task.Run(
                     async () =>
                     {
@@ -726,7 +702,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                 throw new ArgumentNullException(nameof(key));
             }
 
-            // Note Refresh has no effect if there is just an absolute expiration (or neither).
             if (sldExpr.HasValue)
             {
                 Connect();
@@ -734,8 +709,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                     _instance + key,
                     CalculateUpdatedExpiration(absExpr, sldExpr.Value),
                     CommandFlags.FireAndForget);
-
-                // TODO: Error handling
             }
         }
 
@@ -752,7 +725,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
             token.ThrowIfCancellationRequested();
 
-            // Note Refresh has no effect if there is just an absolute expiration (or neither).
             if (sldExpr.HasValue)
             {
                 await ConnectAsync(token);
@@ -761,8 +733,6 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                         CalculateUpdatedExpiration(absExpr, sldExpr.Value),
                         CommandFlags.FireAndForget)
                     .ConfigureAwait(false);
-
-                // TODO: Error handling
             }
         }
 
@@ -848,6 +818,29 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             }
 
             return expr;
+        }
+    }
+
+    internal static class RedisExtensionsLocal
+    {
+        internal static RedisValue[] HashMemberGet(this IDatabase cache, string key, params string[] members) =>
+            cache.HashGet(key, GetRedisMembers(members));
+
+        internal static async Task<RedisValue[]> HashMemberGetAsync(
+            this IDatabase cache,
+            string key,
+            params string[] members) =>
+            await cache.HashGetAsync(key, GetRedisMembers(members)).ConfigureAwait(false);
+
+        private static RedisValue[] GetRedisMembers(params string[] members)
+        {
+            var redisMembers = new RedisValue[members.Length];
+            for (var i = 0; i < members.Length; i++)
+            {
+                redisMembers[i] = (RedisValue)members[i];
+            }
+
+            return redisMembers;
         }
     }
 }
