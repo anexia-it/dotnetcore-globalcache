@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Abstraction.BaseCache;
 using Anexia.Caching.GlobalCache.Config.Model;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction

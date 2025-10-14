@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace Anexia.Caching.GlobalCache.Config

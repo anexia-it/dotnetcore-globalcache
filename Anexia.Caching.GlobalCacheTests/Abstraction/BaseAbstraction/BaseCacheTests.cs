@@ -8,6 +8,7 @@ using Anexia.Caching.GlobalCache.Abstraction.BaseCache;
 using Anexia.Caching.GlobalCache.Interface.BaseInterface;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 using JsonSerializer = Utf8Json.JsonSerializer;
 

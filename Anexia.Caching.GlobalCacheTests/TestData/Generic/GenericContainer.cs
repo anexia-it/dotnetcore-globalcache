@@ -1,4 +1,6 @@
-﻿namespace Anexia.Caching.GlobalCacheTests.TestData.Generic
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Anexia.Caching.GlobalCacheTests.TestData.Generic
 {
     /// <summary>
     /// Test data container which contains result changes
