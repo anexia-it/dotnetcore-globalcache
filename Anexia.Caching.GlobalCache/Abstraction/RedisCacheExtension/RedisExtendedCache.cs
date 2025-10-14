@@ -24,15 +24,31 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                 end
                 return 1";
 
+        // KEYS[1] = key
+        // ARGV[1] = value
+        // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
+        // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
+        // ARGV[4] = data - byte[]
+        // this order should not change LUA script depends on it
+        const string RELEASE_LOCK_SCRIPT = @"
+                if (redis.call('GET', KEYS[1]) == ARGV[1]) then 
+                    redis.call('DEL', KEYS[1])
+                    return true  
+                else  
+                    return false  
+                end";
+
         private const string ABSOLUTE_EXPIRATION_KEY = "absexp";
         private const string SLIDING_EXPIRATION_KEY = "sldexp";
         private const string DATA_KEY = "data";
+        private const string LOCK = "lock";
         private const long NOT_PRESENT = -1;
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
         private readonly string _instance;
-
         private readonly RedisCacheOptions _options;
+
+        private bool _isDisposed;
         private IDatabase _cache;
         private volatile ConnectionMultiplexer _connection;
 
@@ -57,7 +73,8 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
         /// </summary>
         public void Dispose()
         {
-            _connection?.Close();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -88,20 +105,9 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            _ = key ?? throw new ArgumentNullException(nameof(key));
+            _ = value ?? throw new ArgumentNullException(nameof(value));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
 
             Connect();
 
@@ -151,7 +157,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
                 new RedisValue[]
                 {
                     absoluteExpiration?.Ticks ?? NOT_PRESENT, options.SlidingExpiration?.Ticks ?? NOT_PRESENT,
-                    GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NOT_PRESENT, value
+                    GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NOT_PRESENT, value,
                 }).ConfigureAwait(false);
         }
 
@@ -204,11 +210,14 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             token.ThrowIfCancellationRequested();
             var i = 0;
 
+            await ConnectAsync(token);
+
             var lengthToCut = _instance.Length;
             var keyPrefixLengthToCut = keyPrefix == default ? 1 : keyPrefix.Length + 1;
             var tasks = _options.ConfigurationOptions?.EndPoints != null
                 ? new Task[_options.ConfigurationOptions.EndPoints.Count]
                 : new Task[1];
+
             if (_options.ConfigurationOptions?.EndPoints != null)
             {
                 foreach (var configurationOptionsEndPoint in _options.ConfigurationOptions?.EndPoints)
@@ -261,6 +270,166 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             return result.ToArray();
         }
 
+        public async Task<T[]> GetAllValuesAsync<T>(
+            Func<byte[], Task<T>> bodyToConvert,
+            string keyPrefix = default,
+            CancellationToken token = default)
+        {
+            var result = new ConcurrentBag<T>();
+            token.ThrowIfCancellationRequested();
+
+            await ConnectAsync(token);
+
+            var i = 0;
+            var _instanceStringLength = _instance.Length;
+            var processorToUse = Environment.ProcessorCount > 2 ? Environment.ProcessorCount - 1 : 1;
+            var matchString = _instance + keyPrefix;
+            var tasks = _options.ConfigurationOptions?.EndPoints != null
+                ? new Task[_options.ConfigurationOptions.EndPoints.Count]
+                : new Task[1];
+            var getAllValueTasks = new Task[processorToUse];
+            var counter = 0;
+
+            async Task AsyncWorker(object key)
+            {
+                result.Add(await bodyToConvert(await GetAsync((string)key, token)));
+            }
+
+            Task ContinueWorker(Task task, object key)
+            {
+                return AsyncWorker(key);
+            }
+
+            async Task GetValuesOutOfKey(RedisKey redisKey)
+            {
+                if (processorToUse == counter)
+                {
+                    counter = 0;
+                }
+
+                var key = redisKey.ToString();
+                if (keyPrefix != default && !key.StartsWith(matchString))
+                {
+                    return;
+                }
+
+                getAllValueTasks[counter] = getAllValueTasks[counter] != null ?
+                    getAllValueTasks[counter]
+                        .ContinueWith(
+                            ContinueWorker,
+                            key[_instanceStringLength..],
+                            cancellationToken: token,
+                            continuationOptions: TaskContinuationOptions.None,
+                            scheduler: TaskScheduler.Current).Unwrap() :
+                    Task.Factory.StartNew(
+                        AsyncWorker,
+                        key[_instanceStringLength..],
+                        cancellationToken: token,
+                        creationOptions: TaskCreationOptions.None,
+                        scheduler: TaskScheduler.Current).Unwrap();
+                counter++;
+            }
+
+            if (_options.ConfigurationOptions?.EndPoints != null)
+            {
+                foreach (var configurationOptionsEndPoint in _options.ConfigurationOptions?.EndPoints)
+                {
+                    tasks[i] = ConnectGetKeysAsync(configurationOptionsEndPoint, token: token)
+                        .ContinueWith(
+                        async task =>
+                        {
+                            if (task.IsCompletedSuccessfully)
+                            {
+                                await foreach (var redisKey in task.Result.WithCancellation(token))
+                                {
+                                    await GetValuesOutOfKey(redisKey);
+                                }
+                            }
+                        },
+                        TaskScheduler.Current).Unwrap();
+                    i++;
+                }
+            }
+            else
+            {
+                var connection = _connection.Configuration.Split(",").First();
+                tasks[0] = ConnectGetKeysAsync(connection, token: token).ContinueWith(
+                    async task =>
+                    {
+                        if (task.IsCompletedSuccessfully)
+                        {
+                            await foreach (var redisKey in task.Result.WithCancellation(token))
+                            {
+                                await GetValuesOutOfKey(redisKey);
+                            }
+                        }
+                    },
+                    TaskScheduler.Current).Unwrap();
+            }
+
+            await Task.WhenAll(tasks);
+            return await Task.WhenAll(getAllValueTasks.Where(task => task != null))
+                .ContinueWith(
+                    task =>
+                    {
+                        if (task.IsFaulted && task.Exception != null)
+                        {
+                            throw task.Exception;
+                        }
+
+                        return result.ToArray();
+                    },
+                    token,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Current);
+        }
+
+        /// <summary>
+        ///     Acquires the lock.
+        /// </summary>
+        /// <returns><c>true</c>, if lock was acquired, <c>false</c> otherwise.</returns>
+        /// <param name="key">Key.</param>
+        /// <param name="expiration">Expiration.</param>
+        public bool AcquireLock(string key, TimeSpan expiration)
+        {
+            bool flag;
+            Connect();
+
+            try
+            {
+                flag = _cache.StringSet(key, LOCK, expiration, when: When.NotExists);
+            }
+            catch
+            {
+                flag = true;
+            }
+
+            return flag;
+        }
+
+        /// <summary>
+        ///     Releases the lock
+        /// </summary>
+        /// <returns><c>true</c>, if lock was released, <c>false</c> otherwise.</returns>
+        /// <param name="key">Key.</param>
+        public bool ReleaseLock(string key)
+        {
+            Connect();
+
+            try
+            {
+                var res = _cache.ScriptEvaluate(
+                    RELEASE_LOCK_SCRIPT,
+                    new RedisKey[] { key },
+                    new RedisValue[] { LOCK });
+                return (bool)res;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void Connect()
         {
             if (_cache != null)
@@ -283,7 +452,7 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
         }
 
         /// <summary>
-        ///     Creates a connection to RedisCache and gets the keys
+        ///     Creates a connection to RedisCache and get the keys
         /// </summary>
         /// <param name="endPoint">Connection endpoint</param>
         /// <param name="pageOffset">Optional page offset to start from</param>
@@ -372,6 +541,25 @@ namespace Anexia.Caching.GlobalCache.Abstraction.RedisCacheExtension
             {
                 _connectionLock.Release();
             }
+        }
+
+        /// <summary>
+        ///     Disposes of native resources
+        /// </summary>
+        /// <param name="disposing">Indicator whether to dispose or not</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _connection?.Dispose();
+            }
+
+            _isDisposed = true;
         }
 
         /// <summary>

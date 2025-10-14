@@ -13,8 +13,11 @@ ProjectSection(SolutionItems) = preProject
 	AnexiaRules.ruleset = AnexiaRules.ruleset
 	CHANGELOG.md = CHANGELOG.md
 	README.md = README.md
+	README_BASE.md = README_BASE.md
 	stylecop.json = stylecop.json
 	settings.stylecop = settings.stylecop
+    .github\workflows\test.yml = .github\workflows\test-dotnet.yml
+    .github\workflows\publish.yml = .github\workflows\publish.yml
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{9C98BC3D-C614-4FF8-B299-993B32565856}"

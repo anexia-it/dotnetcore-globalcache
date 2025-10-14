@@ -9,6 +9,7 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
     /// <summary>
     /// Test class for Redis caches
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class RedisCacheTest
     {
         private readonly BaseCache<TestClass> _baseCacheWithTypeKey;
@@ -290,12 +291,102 @@ namespace Anexia.Caching.GlobalCacheTests.Abstraction.BaseAbstraction
         /// <summary>
         ///     Item's key should not be found because not existent
         /// </summary>
+        /// <returns>Task to work on</returns>
         [Fact]
-        public void CheckIfHasKeyAsyncShouldReturnFalse()
+        public async Task CheckIfHasKeyAsyncShouldReturnFalse()
         {
-            var hasKey = _baseCacheWithoutTypeKey.HasKeyAsync("Key999");
+            var hasKey = await _baseCacheWithoutTypeKey.HasKeyAsync("Key999");
 
-            Assert.True(!hasKey.Result);
+            Assert.True(!hasKey);
+        }
+
+        /// <summary>
+        ///     All 10000 items should be returned
+        /// </summary>
+        [Fact]
+        public void GetLargeChunkOfValues()
+        {
+            var counter = 10000;
+            var allObjectsSaved = new Dictionary<int, TestClass>();
+            while (counter >= 0)
+            {
+                var differentTestClass = new TestClass()
+                {
+                    TestPropertyName = "Different",
+                    TestPropertyNumber = counter,
+                };
+                _baseCacheWithoutTypeKey.Insert($"KeyBase{counter}", differentTestClass);
+                allObjectsSaved.Add(counter, differentTestClass);
+                counter--;
+            }
+
+            var listOfData = _baseCacheWithoutTypeKey.GetAllValues();
+            foreach (var dataRetrieved in listOfData)
+            {
+                allObjectsSaved.Remove(dataRetrieved.TestPropertyNumber);
+            }
+
+            Assert.NotNull(listOfData);
+            Assert.Empty(allObjectsSaved);
+        }
+
+        /// <summary>
+        ///     Acquire lock two times where the second time it should not work
+        /// </summary>
+        [Fact]
+        public void AcquireLocks_ShouldAcquireOnlyOnce()
+        {
+            var cacheLock = _baseCache.AcquireLock("TestLock");
+            var cacheLockAgain = _baseCache.AcquireLock("TestLock");
+
+            Assert.True(cacheLock);
+            Assert.False(cacheLockAgain);
+
+            _baseCache.Remove("TestLock");
+        }
+
+        /// <summary>
+        ///     Acquire a lock with short expiration and acquire a second lock after expiration of the first one
+        /// </summary>
+        [Fact]
+        public void AcquireLocksWithExpiration_ShouldAcquireSecondLockAfterExpiration()
+        {
+            var cacheLock = _baseCache.AcquireLock("TestLock2", TimeSpan.FromSeconds(1));
+            Task.Delay(TimeSpan.FromSeconds(2)).Wait();
+            var cacheLockAgain = _baseCache.AcquireLock("TestLock2");
+
+            Assert.True(cacheLock);
+            Assert.True(cacheLockAgain);
+
+            _baseCache.Remove("TestLock2");
+        }
+
+        /// <summary>
+        ///     Acquire a lock with then release it
+        /// </summary>
+        [Fact]
+        public void AcquireAndReleaseLock_SecondAcquireShouldReturnTrue()
+        {
+            var cacheLock = _baseCache.AcquireLock("TestLock3");
+            var releaseLock = _baseCache.ReleaseLock("TestLock3");
+            var cacheLockAgain = _baseCache.AcquireLock("TestLock3");
+
+            Assert.True(cacheLock);
+            Assert.True(releaseLock);
+            Assert.True(cacheLockAgain);
+
+            _baseCache.Remove("TestLock3");
+        }
+
+        /// <summary>
+        ///     Release not existent lock
+        /// </summary>
+        [Fact]
+        public void ReleaseNotExistentLock_ShouldReturnFalse()
+        {
+            var releaseLock = _baseCache.ReleaseLock("TestLock4");
+
+            Assert.False(releaseLock);
         }
     }
 }

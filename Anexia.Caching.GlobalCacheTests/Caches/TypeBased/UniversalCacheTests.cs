@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Anexia.Caching.GlobalCache.Caches.TypeBased;
@@ -16,6 +17,7 @@ namespace Anexia.Caching.GlobalCacheTests.Caches.TypeBased
     /// <summary>
     /// Universal test cache
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [Collection("UniCache")]
     [Trait("Category", "GitHub")]
     public class UniversalCacheTests

@@ -4,6 +4,7 @@
     /// Test data container which contains result changes
     /// </summary>
     /// <typeparam name="T">Type of the object</typeparam>
+    [ExcludeFromCodeCoverage]
     public class GenericContainer<T>
         where T : class
     {
