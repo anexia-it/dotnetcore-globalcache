@@ -1,5 +1,6 @@
 ﻿using System;
 using Anexia.Caching.GlobalCache.Interface.BaseInterface;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Anexia.Caching.GlobalCacheTests.CacheMoq
 {

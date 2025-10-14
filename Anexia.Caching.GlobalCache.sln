@@ -20,6 +20,14 @@ ProjectSection(SolutionItems) = preProject
     .github\workflows\publish.yml = .github\workflows\publish.yml
 EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{9C98BC3D-C614-4FF8-B299-993B32565856}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ISSUE_TEMPLATE\bug_report.md = .github\workflows\ISSUE_TEMPLATE\bug_report.md
+		.github\workflows\ISSUE_TEMPLATE\feature_request.md = .github\workflows\ISSUE_TEMPLATE\feature_request.md
+		.github\workflows\PULL_REQUEST_TEMPLATE\pull_request_template.md = .github\workflows\PULL_REQUEST_TEMPLATE\pull_request_template.md
+		.github\workflows\test-dotnet.yml = .github\workflows\test-dotnet.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,5 +48,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {669B4FDA-9BCF-424E-BA86-F2276F98EFDB}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9C98BC3D-C614-4FF8-B299-993B32565856} = {8A95E99D-01E1-4ED4-AEC3-B44440C665D8}
 	EndGlobalSection
 EndGlobal

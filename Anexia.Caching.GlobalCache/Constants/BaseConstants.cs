@@ -1,4 +1,6 @@
-﻿namespace Anexia.Caching.GlobalCache.Constants
+﻿using System;
+
+namespace Anexia.Caching.GlobalCache.Constants
 {
     public static class BaseConstants
     {
